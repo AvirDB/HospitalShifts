@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>לוח משמרות</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --weekend-color: #ffebee;
+            --border-color: #ddd;
+            --header-bg: #f8f9fa;
+            --dept-color-1: #ffb6c1;
+            --dept-color-2: #add8e6;
+            --dept-color-3: #90ee90;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            color: var(--primary-color);
+            position: relative;
+        }
+
+        .tab.active {
+            color: var(--accent-color);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--accent-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--header-bg);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .weekend {
+            background-color: var(--weekend-color);
+        }
+
+        .dept-1 { background-color: var(--dept-color-1); }
+        .dept-2 { background-color: var(--dept-color-2); }
+        .dept-3 { background-color: var(--dept-color-3); }
+
+        .legend {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--header-bg);
+            border-radius: 5px;
+        }
+
+        .legend-item {
+            display: inline-block;
+            margin: 5px 15px;
+        }
+
+        .legend-color {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-left: 8px;
+            vertical-align: middle;
+            border-radius: 3px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            th, td {
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            .legend-item {
+                display: block;
+                margin: 5px 0;
+            }
+        }
+
+        .date-selector {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .date-selector select {
+            padding: 8px 15px;
+            font-size: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: white;
+        }
+
+        .date-selector button {
+            padding: 8px 20px;
+            font-size: 16px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .date-selector button:hover {
+            background-color: #2980b9;
+        }
+
+        .summary-stats {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--header-bg);
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .summary-stats strong {
+            color: var(--accent-color);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 20px auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-height: 90vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-footer {
+            margin-top: 20px;
+            text-align: center;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .save-button {
+            padding: 10px 25px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+
+        .save-button:hover {
+            background-color: #45a049;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--primary-color);
+        }
+
+        .settings-panel {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .worker-controls button,
+        .admin-controls button {
+            padding: 8px 15px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .unavailable-date {
+            background-color: #ffcdd2 !important;
+            position: relative;
+        }
+
+        .unavailable-date::after {
+            content: attr(data-reason);
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            font-size: 10px;
+            color: #d32f2f;
+        }
+
+        .worker-list {
+            margin-bottom: 15px;
+        }
+
+        .worker-list select {
+            width: 200px;
+            padding: 5px;
+        }
+
+        .reason-select {
+            margin: 10px 0;
+        }
+
+        .max-shifts-input {
+            width: 60px;
+            padding: 5px;
+            margin: 0 5px;
+        }
+
+        .new-worker-form {
+            display: grid;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .new-worker-form select,
+        .new-worker-form input {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+
+        .calendar-container {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            max-width: 350px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .calendar-header button {
+            padding: 3px 8px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+
+        .calendar-day {
+            padding: 5px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 12px;
+            position: relative;
+            min-height: 25px;
+        }
+
+        .calendar-day:hover {
+            background-color: #e3f2fd;
+        }
+
+        .calendar-day.unavailable {
+            background-color: #ffcdd2;
+            position: relative;
+        }
+
+        .calendar-day.unavailable::after {
+            content: attr(data-reason);
+            position: absolute;
+            bottom: -1px;
+            right: 0;
+            left: 0;
+            font-size: 7px;
+            color: #d32f2f;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 1px;
+        }
+
+        .calendar-day.other-month {
+            color: #ccc;
+            background-color: #f5f5f5;
+        }
+
+        .calendar-day.weekend {
+            background-color: var(--weekend-color);
+        }
+
+        #unavailabilityList {
+            margin-top: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+
+        #unavailabilityList button {
+            margin-right: 10px;
+            padding: 2px 6px;
+            font-size: 12px;
+            background-color: #ff5252;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        #unavailabilityList div {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .constraints-section {
+            margin-top: 20px;
+        }
+
+        .constraints-section h4 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        #monthlyConstraints table {
+            width: 100%;
+            margin-top: 10px;
+            border-collapse: collapse;
+        }
+
+        #monthlyConstraints th, #monthlyConstraints td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        #monthlyConstraints th {
+            background-color: var(--header-bg);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>לוח משמרות</h1>
+        
+        <div class="settings-panel">
+            <div class="worker-controls">
+                <button onclick="showUnavailabilityModal()">סימון אי-זמינות</button>
+            </div>
+            <div class="admin-controls">
+                <button onclick="showAdminModal()">הגדרות מנהל</button>
+                <button onclick="showNewWorkerModal()">הוספת עובד חדש</button>
+            </div>
+        </div>
+
+        <div class="date-selector">
+            <select id="monthSelect">
+                <option value="0">ינואר</option>
+                <option value="1">פברואר</option>
+                <option value="2">מרץ</option>
+                <option value="3">אפריל</option>
+                <option value="4">מאי</option>
+                <option value="5">יוני</option>
+                <option value="6">יולי</option>
+                <option value="7">אוגוסט</option>
+                <option value="8">ספטמבר</option>
+                <option value="9">אוקטובר</option>
+                <option value="10">נובמבר</option>
+                <option value="11">דצמבר</option>
+            </select>
+            <select id="yearSelect"></select>
+            <button onclick="generateSchedule()">הצג לוח משמרות</button>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('shifts')">לוח משמרות</button>
+            <button class="tab" onclick="showTab('summary')">סיכום חודשי</button>
+        </div>
+
+        <div id="shifts" class="tab-content active">
+            <table id="shiftsTable">
+                <thead>
+                    <tr>
+                        <th>תאריך</th>
+                        <th>יום</th>
+                        <th>מיון יולדות</th>
+                        <th>מיון נשים</th>
+                        <th>חדר לידה</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div id="summary" class="tab-content">
+            <div class="summary-stats">
+                <h3>סטטיסטיקה חודשית</h3>
+                <p>סה"כ משמרות בחודש: <strong id="totalShifts">0</strong></p>
+                <p>סה"כ משמרות סופ"ש: <strong id="totalWeekendShifts">0</strong></p>
+            </div>
+            <table id="summaryTable">
+                <thead>
+                    <tr>
+                        <th>שם העובד</th>
+                        <th>מחלקה</th>
+                        <th>סה"כ משמרות</th>
+                        <th>משמרות סופ"ש</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div class="summary-stats">
+                <h3>הגבלות לחודש הנבחר</h3>
+                <div id="monthlyConstraints">
+                    <div class="constraints-section">
+                        <h4>ימי אי-זמינות</h4>
+                        <table id="unavailabilityTable">
+                            <thead>
+                                <tr>
+                                    <th>שם העובד</th>
+                                    <th>תאריך</th>
+                                    <th>סיבה</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="constraints-section">
+                        <h4>הגדרות מנהל</h4>
+                        <table id="adminSettingsTable">
+                            <thead>
+                                <tr>
+                                    <th>שם העובד</th>
+                                    <th>מספר משמרות מקסימלי</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-color dept-1"></span>
+                <span>מיון יולדות</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color dept-2"></span>
+                <span>מיון נשים</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color dept-3"></span>
+                <span>חדר לידה</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background-color: var(--weekend-color)"></span>
+                <span>סוף שבוע</span>
+            </div>
+        </div>
+
+        <!-- Unavailability Modal -->
+        <div id="unavailabilityModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" onclick="closeModal('unavailabilityModal')">&times;</span>
+                <h2>סימון ימי אי-זמינות</h2>
+                <div class="worker-list">
+                    <select id="workerSelect" onchange="updateCalendarView()">
+                        <!-- Will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="reason-select">
+                    <label>סיבה: </label>
+                    <select id="unavailabilityReason">
+                        <option value="מרפאה">מרפאה</option>
+                        <option value="חופש">חופש</option>
+                        <option value="קורס">קורס</option>
+                    </select>
+                </div>
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button onclick="changeMonth(-1)">&lt;</button>
+                        <span id="currentMonthYear"></span>
+                        <button onclick="changeMonth(1)">&gt;</button>
+                    </div>
+                    <div class="calendar-weekdays">
+                        <div>א</div>
+                        <div>ב</div>
+                        <div>ג</div>
+                        <div>ד</div>
+                        <div>ה</div>
+                        <div>ו</div>
+                        <div>ש</div>
+                    </div>
+                    <div id="calendarDays" class="calendar-days"></div>
+                </div>
+                <div id="unavailabilityList"></div>
+                <div class="modal-footer">
+                    <button class="save-button" onclick="saveAndClose()">שמור וסגור</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Modal -->
+        <div id="adminModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" onclick="closeModal('adminModal')">&times;</span>
+                <h2>הגדרות מנהל</h2>
+                <div class="max-shifts-settings">
+                    <h3>הגדרת מספר משמרות מקסימלי לעובד</h3>
+                    <div class="worker-list">
+                        <select id="adminWorkerSelect">
+                            <!-- Will be populated dynamically -->
+                        </select>
+                        <input type="number" id="maxShiftsInput" class="max-shifts-input" min="1" max="10">
+                        <button onclick="setMaxShifts()">קבע</button>
+                    </div>
+                    <div id="maxShiftsList"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="save-button" onclick="saveAndCloseAdmin()">שמור וסגור</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Worker Modal -->
+        <div id="newWorkerModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" onclick="closeModal('newWorkerModal')">&times;</span>
+                <h2>הוספת עובד חדש</h2>
+                <div class="new-worker-form">
+                    <input type="text" id="newWorkerName" placeholder="שם העובד">
+                    <select id="newWorkerDepartment">
+                        <option value="מיון יולדות">מיון יולדות</option>
+                        <option value="מיון נשים">מיון נשים</option>
+                        <option value="חדר לידה">חדר לידה</option>
+                    </select>
+                    <button onclick="addNewWorker()">הוסף עובד</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Department definitions
+        const DEPARTMENTS = {
+            'מיון יולדות': ['עמית', 'גלינה', 'אורים', 'יוני כהן'],
+            'מיון נשים': ['גל כהן', 'קוצוק', 'אבוגנים', 'ליבובץ', 'לוין', 'קרטס'],
+            'חדר לידה': ['חריש', 'טרסוב', 'מזרחי', 'קציר', 'זמיר', 'אברהמי', 'רביב', 'זומרפרוינד']
+        };
+
+        // Worker capabilities
+        const WORKER_CAPABILITIES = {};
+
+        // Initialize capabilities
+        for (const [dept, workers] of Object.entries(DEPARTMENTS)) {
+            for (const worker of workers) {
+                if (!WORKER_CAPABILITIES[worker]) {
+                    WORKER_CAPABILITIES[worker] = [];
+                }
+                WORKER_CAPABILITIES[worker].push(dept);
+                
+                if (dept === 'חדר לידה') {
+                    WORKER_CAPABILITIES[worker].push('מיון יולדות', 'מיון נשים');
+                } else if (dept === 'מיון נשים') {
+                    WORKER_CAPABILITIES[worker].push('מיון יולדות');
+                }
+            }
+        }
+
+        // Remove duplicates from capabilities
+        for (const worker in WORKER_CAPABILITIES) {
+            WORKER_CAPABILITIES[worker] = [...new Set(WORKER_CAPABILITIES[worker])];
+        }
+
+        // New global variables
+        const UNAVAILABLE_DATES = {};  // worker -> {date -> reason}
+        const MAX_SHIFTS = {};  // worker -> max shifts
+
+        let currentCalendarDate = new Date();
+
+        function updateCalendarView() {
+            const worker = document.getElementById('workerSelect').value;
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            // Update header
+            const monthNames = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 
+                              'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+            document.getElementById('currentMonthYear').textContent = `${monthNames[month]} ${year}`;
+            
+            // Calculate first day of month and total days
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const totalDays = lastDay.getDate();
+            
+            // Calculate days from previous month
+            const firstDayOfWeek = firstDay.getDay();
+            const prevMonthDays = new Date(year, month, 0).getDate();
+            
+            const calendarDays = document.getElementById('calendarDays');
+            calendarDays.innerHTML = '';
+            
+            // Add previous month days
+            for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day other-month';
+                dayDiv.textContent = prevMonthDays - i;
+                calendarDays.appendChild(dayDiv);
+            }
+            
+            // Add current month days
+            for (let day = 1; day <= totalDays; day++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day';
+                dayDiv.textContent = day;
+                
+                const date = new Date(year, month, day);
+                const dateStr = date.toISOString().split('T')[0];
+                
+                // Add weekend class
+                if (date.getDay() === 5 || date.getDay() === 6) {
+                    dayDiv.classList.add('weekend');
+                }
+                
+                // Check if date is unavailable
+                if (UNAVAILABLE_DATES[worker]?.[dateStr]) {
+                    dayDiv.classList.add('unavailable');
+                    dayDiv.setAttribute('data-reason', UNAVAILABLE_DATES[worker][dateStr]);
+                }
+                
+                // Add click handler
+                dayDiv.onclick = () => toggleUnavailability(worker, dateStr, dayDiv);
+                
+                calendarDays.appendChild(dayDiv);
+            }
+            
+            // Add next month days
+            const remainingCells = 42 - (firstDayOfWeek + totalDays); // 42 = 6 rows * 7 days
+            for (let i = 1; i <= remainingCells; i++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day other-month';
+                dayDiv.textContent = i;
+                calendarDays.appendChild(dayDiv);
+            }
+            
+            updateUnavailabilityList();
+        }
+
+        function changeMonth(delta) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + delta);
+            updateCalendarView();
+        }
+
+        function toggleUnavailability(worker, dateStr, dayDiv) {
+            const reason = document.getElementById('unavailabilityReason').value;
+            
+            if (!UNAVAILABLE_DATES[worker]) {
+                UNAVAILABLE_DATES[worker] = {};
+            }
+            
+            if (UNAVAILABLE_DATES[worker][dateStr]) {
+                delete UNAVAILABLE_DATES[worker][dateStr];
+                dayDiv.classList.remove('unavailable');
+                dayDiv.removeAttribute('data-reason');
+            } else {
+                UNAVAILABLE_DATES[worker][dateStr] = reason;
+                dayDiv.classList.add('unavailable');
+                dayDiv.setAttribute('data-reason', reason);
+            }
+            
+            updateUnavailabilityList();
+            generateSchedule();
+        }
+
+        function showUnavailabilityModal() {
+            const modal = document.getElementById('unavailabilityModal');
+            const select = document.getElementById('workerSelect');
+            select.innerHTML = '';
+            
+            // Populate worker select
+            for (const [dept, workers] of Object.entries(DEPARTMENTS)) {
+                for (const worker of workers) {
+                    const option = document.createElement('option');
+                    option.value = worker;
+                    option.textContent = `${worker} (${dept})`;
+                    select.appendChild(option);
+                }
+            }
+            
+            modal.style.display = 'block';
+            currentCalendarDate = new Date(); // Reset to current month
+            updateCalendarView();
+        }
+
+        function updateUnavailabilityList() {
+            const worker = document.getElementById('workerSelect').value;
+            const list = document.getElementById('unavailabilityList');
+            list.innerHTML = '<h3>ימי אי-זמינות:</h3>';
+            
+            if (UNAVAILABLE_DATES[worker]) {
+                const dates = Object.entries(UNAVAILABLE_DATES[worker])
+                    .sort(([dateA], [dateB]) => dateA.localeCompare(dateB));
+                
+                for (const [date, reason] of dates) {
+                    const div = document.createElement('div');
+                    div.textContent = `${new Date(date).toLocaleDateString('he-IL')} - ${reason}`;
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'מחק';
+                    deleteBtn.onclick = () => {
+                        delete UNAVAILABLE_DATES[worker][date];
+                        updateCalendarView();
+                        generateSchedule();
+                    };
+                    div.appendChild(deleteBtn);
+                    list.appendChild(div);
+                }
+            }
+        }
+
+        function showAdminModal() {
+            const modal = document.getElementById('adminModal');
+            const select = document.getElementById('adminWorkerSelect');
+            select.innerHTML = '';
+            
+            // Populate worker select
+            for (const [dept, workers] of Object.entries(DEPARTMENTS)) {
+                for (const worker of workers) {
+                    const option = document.createElement('option');
+                    option.value = worker;
+                    option.textContent = `${worker} (${dept})`;
+                    select.appendChild(option);
+                }
+            }
+            
+            modal.style.display = 'block';
+            updateMaxShiftsList();
+        }
+
+        function showNewWorkerModal() {
+            document.getElementById('newWorkerModal').style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function setMaxShifts() {
+            const worker = document.getElementById('adminWorkerSelect').value;
+            const maxShifts = parseInt(document.getElementById('maxShiftsInput').value);
+            
+            if (maxShifts > 0) {
+                MAX_SHIFTS[worker] = maxShifts;
+                updateMaxShiftsList();
+                generateSchedule();  // Regenerate schedule with new constraints
+            }
+        }
+
+        function updateMaxShiftsList() {
+            const list = document.getElementById('maxShiftsList');
+            list.innerHTML = '<h3>הגדרות נוכחיות:</h3>';
+            
+            for (const [worker, maxShifts] of Object.entries(MAX_SHIFTS)) {
+                const div = document.createElement('div');
+                div.textContent = `${worker}: ${maxShifts} משמרות`;
+                list.appendChild(div);
+            }
+        }
+
+        function addNewWorker() {
+            const name = document.getElementById('newWorkerName').value.trim();
+            const department = document.getElementById('newWorkerDepartment').value;
+            
+            if (name) {
+                DEPARTMENTS[department].push(name);
+                
+                // Update worker capabilities
+                WORKER_CAPABILITIES[name] = [department];
+                if (department === 'חדר לידה') {
+                    WORKER_CAPABILITIES[name].push('מיון יולדות', 'מיון נשים');
+                } else if (department === 'מיון נשים') {
+                    WORKER_CAPABILITIES[name].push('מיון יולדות');
+                }
+                
+                closeModal('newWorkerModal');
+                generateSchedule();  // Regenerate schedule with new worker
+            }
+        }
+
+        function saveAndClose() {
+            generateSchedule();  // עדכון לוח המשמרות
+            closeModal('unavailabilityModal');
+        }
+
+        function saveAndCloseAdmin() {
+            generateSchedule();  // עדכון לוח המשמרות
+            closeModal('adminModal');
+        }
+
+        class ShiftScheduler {
+            constructor() {
+                this.shifts = {};
+                this.resetCounters();
+            }
+
+            resetCounters() {
+                this.worker_shifts_count = {};
+                this.worker_weekend_shifts = {};
+                this.last_shift_date = {};
+                
+                for (const workers of Object.values(DEPARTMENTS)) {
+                    for (const worker of workers) {
+                        this.worker_shifts_count[worker] = 0;
+                        this.worker_weekend_shifts[worker] = 0;
+                        this.last_shift_date[worker] = null;
+                    }
+                }
+            }
+
+            canAssignShift(worker, date, department) {
+                // Check unavailability
+                const dateStr = date.toISOString().split('T')[0];
+                if (UNAVAILABLE_DATES[worker]?.[dateStr]) {
+                    return false;
+                }
+
+                // Check max shifts limit - now includes both regular and weekend shifts
+                if (MAX_SHIFTS[worker] && this.worker_shifts_count[worker] + this.worker_weekend_shifts[worker] >= MAX_SHIFTS[worker]) {
+                    return false;
+                }
+
+                // Check if worker can work in this department
+                if (!WORKER_CAPABILITIES[worker].includes(department)) {
+                    return false;
+                }
+
+                // Check if worker already has a shift on this date
+                if (this.shifts[dateStr]) {
+                    for (const [dept, assigned_worker] of Object.entries(this.shifts[dateStr])) {
+                        if (worker === assigned_worker) {
+                            return false;
+                        }
+                    }
+                }
+
+                // Check if worker had a shift yesterday
+                const yesterday = new Date(date);
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayKey = yesterday.toISOString().split('T')[0];
+                if (this.shifts[yesterdayKey]) {
+                    for (const [dept, assigned_worker] of Object.entries(this.shifts[yesterdayKey])) {
+                        if (worker === assigned_worker) {
+                            return false;
+                        }
+                    }
+                }
+
+                // Check monthly shift limit - now includes both regular and weekend shifts
+                if (this.worker_shifts_count[worker] + this.worker_weekend_shifts[worker] >= 7) {
+                    return false;
+                }
+
+                // Check weekend shift limit
+                const isWeekend = date.getDay() === 5 || date.getDay() === 6;
+                if (isWeekend && this.worker_weekend_shifts[worker] >= 2) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            assignShift(date, department) {
+                const available_workers = Object.keys(WORKER_CAPABILITIES).filter(
+                    worker => this.canAssignShift(worker, date, department)
+                );
+
+                if (available_workers.length === 0) {
+                    return null;
+                }
+
+                // Sort workers by shift count to maintain balance
+                available_workers.sort((a, b) => {
+                    if (this.worker_shifts_count[a] !== this.worker_shifts_count[b]) {
+                        return this.worker_shifts_count[a] - this.worker_shifts_count[b];
+                    }
+                    return this.worker_weekend_shifts[a] - this.worker_weekend_shifts[b];
+                });
+
+                const worker = available_workers[0];
+                const dateKey = date.toISOString().split('T')[0];
+
+                if (!this.shifts[dateKey]) {
+                    this.shifts[dateKey] = {};
+                }
+
+                this.shifts[dateKey][department] = worker;
+                this.worker_shifts_count[worker]++;
+                
+                if (date.getDay() === 5 || date.getDay() === 6) {
+                    this.worker_weekend_shifts[worker]++;
+                }
+
+                this.last_shift_date[worker] = date;
+                return worker;
+            }
+        }
+
+        function getDepartmentClass(worker) {
+            for (const [dept, workers] of Object.entries(DEPARTMENTS)) {
+                if (workers.includes(worker)) {
+                    switch(dept) {
+                        case 'מיון יולדות': return 'dept-1';
+                        case 'מיון נשים': return 'dept-2';
+                        case 'חדר לידה': return 'dept-3';
+                    }
+                }
+            }
+            return '';
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            document.querySelector(`.tab[onclick="showTab('${tabName}')"]`).classList.add('active');
+        }
+
+        // Initialize year select options
+        function initializeDateSelectors() {
+            const yearSelect = document.getElementById('yearSelect');
+            const currentYear = new Date().getFullYear();
+            
+            // Add options for current year and next 5 years
+            for (let year = currentYear; year <= currentYear + 5; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            }
+
+            // Set default month and year
+            const currentDate = new Date();
+            document.getElementById('monthSelect').value = currentDate.getMonth();
+            yearSelect.value = currentDate.getFullYear();
+        }
+
+        function generateSchedule() {
+            const scheduler = new ShiftScheduler();
+            const hebrewDays = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+            
+            // Get selected month and year
+            const selectedMonth = parseInt(document.getElementById('monthSelect').value);
+            const selectedYear = parseInt(document.getElementById('yearSelect').value);
+            
+            // Generate dates for selected month
+            const startDate = new Date(selectedYear, selectedMonth, 1);
+            const endDate = new Date(selectedYear, selectedMonth + 1, 0);
+            const dates = [];
+            
+            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                dates.push(new Date(d));
+            }
+
+            // Reset counters before generating new schedule
+            scheduler.resetCounters();
+
+            // Assign shifts
+            for (const date of dates) {
+                for (const department of ['מיון יולדות', 'מיון נשים', 'חדר לידה']) {
+                    scheduler.assignShift(date, department);
+                }
+            }
+
+            // Update page title
+            const monthNames = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 
+                              'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+            document.querySelector('h1').textContent = `לוח משמרות - ${monthNames[selectedMonth]} ${selectedYear}`;
+
+            // Reset counters for accurate counting from the actual assignments
+            scheduler.resetCounters();
+
+            // Fill shifts table and count actual assignments
+            const shiftsBody = document.querySelector('#shiftsTable tbody');
+            shiftsBody.innerHTML = '';
+
+            for (const date of dates) {
+                const dateKey = date.toISOString().split('T')[0];
+                const row = document.createElement('tr');
+                
+                if (date.getDay() === 5 || date.getDay() === 6) {
+                    row.classList.add('weekend');
+                }
+
+                const dateStr = date.toLocaleDateString('he-IL');
+                const dayName = hebrewDays[date.getDay()];
+
+                const cells = [`<td>${dateStr}</td>`, `<td>${dayName}</td>`];
+                
+                for (const dept of ['מיון יולדות', 'מיון נשים', 'חדר לידה']) {
+                    const worker = scheduler.shifts[dateKey]?.[dept] || '';
+                    if (worker) {
+                        if (date.getDay() === 5 || date.getDay() === 6) {
+                            scheduler.worker_weekend_shifts[worker]++;
+                        } else {
+                            scheduler.worker_shifts_count[worker]++;
+                        }
+                    }
+                    const unavailableReason = UNAVAILABLE_DATES[worker]?.[dateKey];
+                    const cellClass = getDepartmentClass(worker) + 
+                        (unavailableReason ? ' unavailable-date' : '');
+                    const dataReason = unavailableReason ? ` data-reason="${unavailableReason}"` : '';
+                    
+                    cells.push(`<td class="${cellClass}"${dataReason}>${worker}</td>`);
+                }
+
+                row.innerHTML = cells.join('');
+                shiftsBody.appendChild(row);
+            }
+
+            // Calculate total shifts
+            let totalShifts = 0;
+            let totalWeekendShifts = 0;
+            for (const worker in scheduler.worker_shifts_count) {
+                totalShifts += scheduler.worker_shifts_count[worker];
+                totalWeekendShifts += scheduler.worker_weekend_shifts[worker];
+            }
+
+            // Update summary statistics
+            document.getElementById('totalShifts').textContent = totalShifts;
+            document.getElementById('totalWeekendShifts').textContent = totalWeekendShifts;
+
+            // Fill summary table
+            const summaryBody = document.querySelector('#summaryTable tbody');
+            summaryBody.innerHTML = '';
+
+            for (const [dept, workers] of Object.entries(DEPARTMENTS)) {
+                for (const worker of workers) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${worker}</td>
+                        <td>${dept}</td>
+                        <td>${scheduler.worker_shifts_count[worker]}</td>
+                        <td>${scheduler.worker_weekend_shifts[worker]}</td>
+                    `;
+                    summaryBody.appendChild(row);
+                }
+            }
+
+            // Update constraints tables
+            const unavailabilityBody = document.querySelector('#unavailabilityTable tbody');
+            unavailabilityBody.innerHTML = '';
+            
+            // Filter unavailable dates for the selected month
+            for (const [worker, dates] of Object.entries(UNAVAILABLE_DATES)) {
+                for (const [dateStr, reason] of Object.entries(dates)) {
+                    const date = new Date(dateStr);
+                    if (date.getMonth() === selectedMonth && date.getFullYear() === selectedYear) {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${worker}</td>
+                            <td>${date.toLocaleDateString('he-IL')}</td>
+                            <td>${reason}</td>
+                        `;
+                        unavailabilityBody.appendChild(row);
+                    }
+                }
+            }
+
+            const adminSettingsBody = document.querySelector('#adminSettingsTable tbody');
+            adminSettingsBody.innerHTML = '';
+            
+            for (const [worker, maxShifts] of Object.entries(MAX_SHIFTS)) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${worker}</td>
+                    <td>${maxShifts}</td>
+                `;
+                adminSettingsBody.appendChild(row);
+            }
+        }
+
+        // Initialize date selectors and generate initial schedule
+        window.onload = function() {
+            initializeDateSelectors();
+            // Remove automatic schedule generation
+            clearTables();
+        };
+
+        function clearTables() {
+            // Clear shifts table
+            const shiftsBody = document.querySelector('#shiftsTable tbody');
+            shiftsBody.innerHTML = '';
+
+            // Clear summary table
+            const summaryBody = document.querySelector('#summaryTable tbody');
+            summaryBody.innerHTML = '';
+
+            // Clear constraints tables
+            const unavailabilityBody = document.querySelector('#unavailabilityTable tbody');
+            unavailabilityBody.innerHTML = '';
+
+            const adminSettingsBody = document.querySelector('#adminSettingsTable tbody');
+            adminSettingsBody.innerHTML = '';
+
+            // Reset statistics
+            document.getElementById('totalShifts').textContent = '0';
+            document.getElementById('totalWeekendShifts').textContent = '0';
+        }
+    </script>
+</body>
+</html> 
